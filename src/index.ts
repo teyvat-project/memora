@@ -99,6 +99,16 @@ const users =
     return values.every((value): value is T => value !== undefined) ? values : undefined;
   };
 
+// XRift writes participant names as a JSON array so names containing commas stay intact.
+const xriftParticipants = (value: unknown): string[] | undefined => {
+  if (typeof value !== "string") return undefined;
+  try {
+    return users(string)(JSON.parse(value));
+  } catch {
+    return undefined;
+  }
+};
+
 const vrcxUser = (input: unknown): VrcxUser | undefined => {
   const source = object(input);
   if (!source) return undefined;
@@ -218,6 +228,7 @@ export const parseAllImageMetadata = async (input: PhotoInput): Promise<ImageMet
         creationTime: get("Creation Time", string),
         worldId: get("XRift World ID", string),
         source: get("Source", string),
+        participants: get("XRift Participants", xriftParticipants),
         extra,
       }),
     );

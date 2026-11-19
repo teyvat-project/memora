@@ -83,6 +83,11 @@ export type XRiftImageMetadata = ImageBase & {
   worldId?: string;
   /** Original PNG `Source`. XRift writes the world page URL here. */
   source?: string;
+  /**
+   * Original `XRift Participants` decoded from its JSON array: display names of the people
+   * in the photo. XRift omits the keyword when nobody is in the photo.
+   */
+  participants?: string[];
 };
 
 export type ImageMetadata =
