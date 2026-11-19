@@ -16,6 +16,7 @@ describe.each([
   ["resonite-screenshot-extensions", "ResoniteScreenshotExtensions"],
   ["vrcx", "VRCX"],
   ["xrift", "XRift"],
+  ["xrift-participants", "XRift"],
 ])("supplied %s image", (name, type) => {
   const bytes = new Uint8Array(readFileSync(fixtureUrl(`${name}.png`)));
   const expected: unknown = JSON.parse(readFileSync(fixtureUrl(`${name}.expected.json`), "utf8"));
