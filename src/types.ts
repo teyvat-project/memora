@@ -68,7 +68,25 @@ export type ResoniteScreenshotExtensionsImageMetadata = ImageBase & {
   userInfos?: ResoniteUserInfo[];
 };
 
+/** XRift writes standard PNG iTXt keywords plus its own world ID keyword. */
+export type XRiftImageMetadata = ImageBase & {
+  type: "XRift";
+  /** Original PNG `Software`. */
+  software: "XRift";
+  /** Original PNG `Title`. XRift writes the world name here. */
+  title?: string;
+  /** Original PNG `Author`. The photographer's display name. */
+  author?: string;
+  /** Original PNG `Creation Time` text. */
+  creationTime?: string;
+  /** Original `XRift World ID`. */
+  worldId?: string;
+  /** Original PNG `Source`. XRift writes the world page URL here. */
+  source?: string;
+};
+
 export type ImageMetadata =
   | VrcxImageMetadata
   | VRChatImageMetadata
-  | ResoniteScreenshotExtensionsImageMetadata;
+  | ResoniteScreenshotExtensionsImageMetadata
+  | XRiftImageMetadata;

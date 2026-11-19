@@ -1,6 +1,6 @@
 # Memora
 
-Memora は、VRChat・VRCX・ResoniteScreenshotExtensions が画像に埋め込んだメタデータを読み取る TypeScript ライブラリです。撮影者、ワールド、カメラ設定、参加者の位置・姿勢などを、形式ごとの型付きオブジェクトとして取得できます。
+Memora は、VRChat・VRCX・ResoniteScreenshotExtensions・XRift が画像に埋め込んだメタデータを読み取る TypeScript ライブラリです。撮影者、ワールド、カメラ設定、参加者の位置・姿勢などを、形式ごとの型付きオブジェクトとして取得できます。
 
 Node.js、ブラウザー、React Native 向けに、`ArrayBuffer` または `Uint8Array` を受け取る API を提供します。ファイルの読み取りやネットワークアクセスは呼び出し側で行います。
 
@@ -33,6 +33,10 @@ if (metadata) {
       console.log(metadata.takenBy?.name, metadata.cameraFOV);
       console.log(metadata.userInfos);
       break;
+
+    case "XRift":
+      console.log(metadata.author, metadata.title, metadata.worldId);
+      break;
   }
 }
 ```
@@ -47,7 +51,7 @@ if (metadata) {
 function parseImageMetadata(input: ArrayBuffer | Uint8Array): Promise<ImageMetadata | null>;
 ```
 
-画像から 1 件のメタデータを取得します。複数形式が同居する場合は VRChat、VRCX、ResoniteScreenshotExtensions の順で優先します。
+画像から 1 件のメタデータを取得します。複数形式が同居する場合は VRChat、VRCX、ResoniteScreenshotExtensions、XRift の順で優先します。
 
 `parsePhotoMetadata` はこの関数の別名です。
 
@@ -63,16 +67,19 @@ function parseAllImageMetadata(input: ArrayBuffer | Uint8Array): Promise<ImageMe
 
 ```ts
 type ImageMetadata =
-  VrcxImageMetadata | VRChatImageMetadata | ResoniteScreenshotExtensionsImageMetadata;
+  | VrcxImageMetadata
+  | VRChatImageMetadata
+  | ResoniteScreenshotExtensionsImageMetadata
+  | XRiftImageMetadata;
 ```
 
 すべての形式に、次のプロパティがあります。
 
-| プロパティ | 型                                                     | 内容                                                   |
-| ---------- | ------------------------------------------------------ | ------------------------------------------------------ |
-| `type`     | `"VRCX" \| "VRChat" \| "ResoniteScreenshotExtensions"` | メタデータの形式                                       |
-| `raw`      | `Uint8Array`                                           | 元画像全体のバイト列                                   |
-| `extra`    | `Record<string, unknown>`                              | 型定義にない項目、または期待する型へ解析できなかった値 |
+| プロパティ | 型                                                                 | 内容                                                   |
+| ---------- | ------------------------------------------------------------------ | ------------------------------------------------------ |
+| `type`     | `"VRCX" \| "VRChat" \| "ResoniteScreenshotExtensions" \| "XRift"`  | メタデータの形式                                       |
+| `raw`      | `Uint8Array`                                                       | 元画像全体のバイト列                                   |
+| `extra`    | `Record<string, unknown>`                                          | 型定義にない項目、または期待する型へ解析できなかった値 |
 
 画像に含まれない項目は optional プロパティとして扱います。空文字が埋め込まれている場合は、その空文字を保持します。
 
@@ -117,6 +124,23 @@ type ImageMetadata =
 - `sessionJoinTimestamp`
 
 `userInfos` は、ユーザーが 1 人の場合も配列です。
+
+### XRift
+
+`type: "XRift"`
+
+PNG の iTXt キーワード `Software` が `XRift` の画像を認識します。各フィールドは次のキーワードから取得します。
+
+| プロパティ     | iTXt キーワード  | 内容                   |
+| -------------- | ---------------- | ---------------------- |
+| `software`     | `Software`       | 常に `"XRift"`         |
+| `title`        | `Title`          | ワールド名             |
+| `author`       | `Author`         | 撮影者の表示名         |
+| `creationTime` | `Creation Time`  | 撮影日時（元の文字列） |
+| `worldId`      | `XRift World ID` | ワールド ID            |
+| `source`       | `Source`         | ワールドページの URL   |
+
+その他の iTXt キーワードは、キーワード名をキーとして `extra` に保持します。VRCX の `Description` と XMP は含みません。
 
 ## 値の扱い
 
@@ -167,7 +191,7 @@ Metro は `react-native` 条件（従来の解決方式では同名のフィー�
 
 ## 対応範囲と制約
 
-PNG の iTXt（非圧縮・zlib 圧縮）と XMP を読み取ります。ResoniteScreenshotExtensions の JPEG XMP にも対応します。
+PNG の iTXt（非圧縮・zlib 圧縮）と XMP を読み取ります。tEXt / zTXt チャンクは読み取りません。ResoniteScreenshotExtensions の JPEG XMP にも対応します。
 
 画像のリサイズ・再圧縮・形式変換により、メタデータが削除される場合があります。変換前の元画像を使用してください。
 
