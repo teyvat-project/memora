@@ -195,6 +195,34 @@ export const parseAllImageMetadata = async (input: PhotoInput): Promise<ImageMet
     );
   }
 
+  // XRift stores each field as its own PNG text keyword. Packets owned by other
+  // formats are excluded so they do not appear in XRift's extra.
+  const text: Fields = Object.create(null);
+  for (const chunk of container.itxt) {
+    if (chunk.text === null || chunk.keyword === "XML:com.adobe.xmp") continue;
+    if (chunk.keyword === "Description" && object(chunk.data)?.application === "VRCX") continue;
+    text[chunk.keyword] =
+      chunk.keyword in text ? [...list(text[chunk.keyword]), chunk.text] : chunk.text;
+  }
+
+  if (text.Software === "XRift") {
+    const { get, extra } = fields(text);
+    delete extra.Software;
+    result.push(
+      compact({
+        type: "XRift",
+        raw,
+        software: "XRift",
+        title: get("Title", string),
+        author: get("Author", string),
+        creationTime: get("Creation Time", string),
+        worldId: get("XRift World ID", string),
+        source: get("Source", string),
+        extra,
+      }),
+    );
+  }
+
   for (const packet of container.xmp) {
     const root = object(packet.data?.["x:xmpmeta"]) ?? packet.data;
     const rdf = object(root?.["rdf:RDF"]);
@@ -263,6 +291,7 @@ export const parseAllImageMetadata = async (input: PhotoInput): Promise<ImageMet
     VRChat: 0,
     VRCX: 1,
     ResoniteScreenshotExtensions: 2,
+    XRift: 3,
   };
 
   // A screenshot can contain metadata written by more than one application.
@@ -274,7 +303,7 @@ export const parseAllImageMetadata = async (input: PhotoInput): Promise<ImageMet
     .map(({ metadata }) => metadata);
 };
 
-/** Prefer VRChat, then VRCX, then ResoniteScreenshotExtensions for mixed images. */
+/** Prefer VRChat, then VRCX, then ResoniteScreenshotExtensions, then XRift for mixed images. */
 export const parseImageMetadata = async (input: PhotoInput): Promise<ImageMetadata | null> => {
   const results = await parseAllImageMetadata(input);
   return results[0] ?? null;

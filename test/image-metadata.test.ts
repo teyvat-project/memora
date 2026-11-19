@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
 import { parseImageMetadata, parseAllImageMetadata } from "../dist/index.js";
-import { png, itxt, vrchat, resonite, vrcx, jpeg } from "./fixtures.js";
+import { png, itxt, vrchat, resonite, vrcx, jpeg, xrift } from "./fixtures.js";
 
 test("VRCX: author, instance and every player have typed fields; extensions survive", async () => {
   const source = {
@@ -138,4 +138,55 @@ test("mixed images expose all recognized formats in VRChat, VRCX, Resonite order
   assert.equal(preferred.type, "VRChat");
   assert.equal(await parseImageMetadata(png()), null);
   assert.deepEqual(await parseAllImageMetadata(new Uint8Array()), []);
+});
+test("XRift: PNG text keywords become typed fields; unknown keywords stay in extra", async () => {
+  const bytes = png(...xrift(), itxt("Comment", "  future  ", "ja", "コメント", true));
+  const result = await parseImageMetadata(bytes);
+  assert.ok(result);
+  assert.equal(result.type, "XRift");
+  assert.deepEqual(
+    { ...result, raw: undefined },
+    {
+      type: "XRift",
+      raw: undefined,
+      software: "XRift",
+      title: "テストワールド",
+      author: "撮影者",
+      creationTime: "2026-11-19T04:05:13.864Z",
+      worldId: "00000000-0000-4000-8000-000000000000",
+      source: "https://xrift.net/world/00000000-0000-4000-8000-000000000000",
+      extra: { Comment: "  future  " },
+    },
+  );
+  assert.deepEqual(result.raw, bytes);
+});
+test("XRift: missing fields are not synthesized and duplicate keywords are kept", async () => {
+  const bytes = png(
+    itxt("Software", "XRift"),
+    itxt("Title", ""),
+    itxt("XRift World ID", "a"),
+    itxt("XRift World ID", "b"),
+  );
+  const result = await parseImageMetadata(bytes);
+  assert.ok(result);
+  assert.equal(result.type, "XRift");
+  assert.equal(result.title, "");
+  assert.equal(result.author, undefined);
+  assert.equal("creationTime" in result, false);
+  assert.equal(result.worldId, undefined);
+  assert.deepEqual(result.extra, { "XRift World ID": ["a", "b"] });
+});
+test("XRift: other software and other formats' packets are not treated as XRift", async () => {
+  assert.equal(await parseImageMetadata(png(...xrift({ Software: "Other" }))), null);
+  assert.equal(await parseImageMetadata(png(itxt("XRift World ID", "a"))), null);
+  const all = await parseAllImageMetadata(
+    png(...xrift(), itxt("Description", vrcx), itxt("XML:com.adobe.xmp", vrchat())),
+  );
+  assert.deepEqual(
+    all.map((v) => v.type),
+    ["VRChat", "VRCX", "XRift"],
+  );
+  const metadata = all[2];
+  assert.equal(metadata.type, "XRift");
+  assert.deepEqual(metadata.extra, {});
 });

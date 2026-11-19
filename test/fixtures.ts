@@ -81,6 +81,17 @@ export const resonite = (
     : ""
 }
 </rdf:Description></rdf:RDF></x:xmpmeta>`;
+// Mirrors the keyword layout XRift writes, using invented values.
+export const xrift = (overrides: Record<string, string> = {}) =>
+  Object.entries({
+    Title: "テストワールド",
+    Author: "撮影者",
+    "Creation Time": "2026-11-19T04:05:13.864Z",
+    Software: "XRift",
+    "XRift World ID": "00000000-0000-4000-8000-000000000000",
+    Source: "https://xrift.net/world/00000000-0000-4000-8000-000000000000",
+    ...overrides,
+  }).map(([keyword, text]) => itxt(keyword, text));
 export const jpeg = (xml: string) => {
   const payload = concat(utf8("http://ns.adobe.com/xap/1.0/\0"), utf8(xml));
   const header = new Uint8Array([255, 216, 255, 225, 0, 0]);

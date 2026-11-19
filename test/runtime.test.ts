@@ -3,7 +3,7 @@ import { test } from "vitest";
 import type { ImageMetadata } from "../dist/index.js";
 import vm from "node:vm";
 import { build } from "esbuild";
-import { png, itxt, vrcx, vrchat, resonite, jpeg } from "./fixtures.js";
+import { png, itxt, vrcx, vrchat, resonite, jpeg, xrift } from "./fixtures.js";
 
 // Exercise a bundled JS runtime without Node, DOM, TextDecoder or native modules.
 // This is a portability regression check, not an iOS/Android device test.
@@ -34,6 +34,7 @@ for (const mainFields of [
       [png(itxt("XML:com.adobe.xmp", vrchat())), "VRChat"],
       [png(itxt("XML:com.adobe.xmp", resonite())), "Resonite"],
       [jpeg(resonite()), "Resonite"],
+      [png(...xrift()), "XRift"],
     ] as const) {
       context.bytes = Array.from(input);
       const metadata: ImageMetadata | null = await vm.runInContext(
@@ -46,6 +47,7 @@ for (const mainFields of [
         assert.equal(metadata.world.name, "日本語の世界 🌏");
       } else if (metadata.type === "ResoniteScreenshotExtensions")
         assert.equal(metadata.locationName, "世界");
+      else if (metadata.type === "XRift") assert.equal(metadata.title, "テストワールド");
       else assert.equal(metadata.type, "VRChat");
     }
   });
