@@ -1,6 +1,6 @@
 {
   "name": "@natsuneko-laboratory/memora",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Memora extracts VRChat, VRCX, ResoniteScreenshotExtensions and XRift metadata for Node.js, Browser and React Native.",
   "license": "MIT",
   "files": [
