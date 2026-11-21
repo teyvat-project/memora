@@ -9,8 +9,9 @@
 | `vrcx.png`                           | VRCX                         | `media_0a3b8067-3195-47f4-ab84-8b3645fd7eae.png` |
 | `vrchat-vrcx.png`                    | VRChat + VRCX                | `media_307873eb-85b5-46a1-ae00-3a05f2deaae5.png` |
 | `xrift.png`                          | XRift                        | `xrift-photo-2026-11-19T04-05-13-864Z.png`       |
+| `xrift-participants.png`             | XRift（写っている人あり）    | `xrift-photo-2026-11-19T12-34-28-112Z.png`       |
 
-`xrift.png` は 2026-11-19 の XRift 対応作業で追加した、XRift が書き出した元画像です。
+`xrift.png` は 2026-11-19 の XRift 対応作業で追加した、XRift が書き出した元画像です。`xrift-participants.png` は写っている人の一覧（`XRift Participants`）を含む XRift の元画像で、XRift の開発者が提供しました。
 
 `manifest.json` に元ファイルのバイト数と SHA-256 を固定しています。テストは Downloads などのローカルディレクトリには依存しません。
 

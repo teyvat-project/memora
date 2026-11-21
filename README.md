@@ -131,14 +131,17 @@ type ImageMetadata =
 
 PNG の iTXt キーワード `Software` が `XRift` の画像を認識します。各フィールドは次のキーワードから取得します。
 
-| プロパティ     | iTXt キーワード  | 内容                   |
-| -------------- | ---------------- | ---------------------- |
-| `software`     | `Software`       | 常に `"XRift"`         |
-| `title`        | `Title`          | ワールド名             |
-| `author`       | `Author`         | 撮影者の表示名         |
-| `creationTime` | `Creation Time`  | 撮影日時（元の文字列） |
-| `worldId`      | `XRift World ID` | ワールド ID            |
-| `source`       | `Source`         | ワールドページの URL   |
+| プロパティ     | iTXt キーワード      | 内容                       |
+| -------------- | -------------------- | -------------------------- |
+| `software`     | `Software`           | 常に `"XRift"`             |
+| `title`        | `Title`              | ワールド名                 |
+| `author`       | `Author`             | 撮影者の表示名             |
+| `creationTime` | `Creation Time`      | 撮影日時（元の文字列）     |
+| `worldId`      | `XRift World ID`     | ワールド ID                |
+| `source`       | `Source`             | ワールドページの URL       |
+| `participants` | `XRift Participants` | 写っている人の表示名の配列 |
+
+`participants` は、XRift が JSON の配列として書いた表示名を読み解いた値です。名前に `,` や `、` を含んでも分かれません。写っている人がいない写真には、このキーワードがありません。文字列の配列として読み解けない場合は、元の文字列を `extra` に保持します。
 
 その他の iTXt キーワードは、キーワード名をキーとして `extra` に保持します。VRCX の `Description` と XMP は含みません。
 

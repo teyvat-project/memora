@@ -190,3 +190,22 @@ test("XRift: other software and other formats' packets are not treated as XRift"
   assert.equal(metadata.type, "XRift");
   assert.deepEqual(metadata.extra, {});
 });
+test("XRift: participants are decoded from the JSON array, keeping commas in names", async () => {
+  const names = ["Alice", "ボブ, Jr.", "さん、さん"];
+  const result = await parseImageMetadata(
+    png(...xrift({ "XRift Participants": JSON.stringify(names) })),
+  );
+  assert.ok(result);
+  assert.equal(result.type, "XRift");
+  assert.deepEqual(result.participants, names);
+  assert.deepEqual(result.extra, {});
+});
+test("XRift: participants that are not a JSON array of strings stay in extra", async () => {
+  for (const value of ["Alice, Bob", "[1, 2]", '{"name":"Alice"}', '"Alice"']) {
+    const result = await parseImageMetadata(png(...xrift({ "XRift Participants": value })));
+    assert.ok(result);
+    assert.equal(result.type, "XRift");
+    assert.equal("participants" in result, false);
+    assert.deepEqual(result.extra, { "XRift Participants": value });
+  }
+});
