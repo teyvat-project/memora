@@ -10,7 +10,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mika-f/memora"
+    "url": "https://github.com/teyvat-project/memora"
   },
   "sideEffects": false,
   "main": "./dist/index.js",
